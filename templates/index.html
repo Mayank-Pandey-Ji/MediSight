@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Health Predictor</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* small custom animations */
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fade-in-up 450ms ease both; }
+
+    /* chip scrollbar nicety */
+    .chips::-webkit-scrollbar { height: 8px; }
+    .chips::-webkit-scrollbar-thumb { background: rgba(16,185,129,0.25); border-radius: 8px; }
+  </style>
+</head>
+<body class="bg-gradient-to-b from-green-50 via-white to-green-50 min-h-screen text-gray-800">
+
+  <!-- NAVBAR -->
+  <!-- NAVBAR (mobile menu toggle added) -->
+<header class="bg-white/80 backdrop-blur sticky top-0 z-40 shadow-sm">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-6">
+    <div class="flex items-center gap-3">
+      <!-- Logo / Branding -->
+      <div class="bg-green-600 text-white p-2 rounded-lg shadow-md flex items-center justify-center">
+        <!-- medical cross SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <a href="/" class="text-lg font-bold text-green-800">MediSight</a>
+        <div class="text-xs text-gray-500 -mt-0.5">Quick health predictor</div>
+      </div>
+    </div>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-green-700">
+      <a href="/" class="hover:text-green-900 transition">Home</a>
+      <a href="/about" class="hover:text-green-900 transition">About</a>
+      <a href="/blog" class="hover:text-green-900 transition">Blog</a>
+      <a href="/developer" class="px-3 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Developer</a>
+    </nav>
+
+    <!-- Mobile menu button -->
+    <div class="md:hidden">
+      <button id="nav-toggle" aria-controls="mobile-menu" aria-expanded="false"
+              class="p-2 rounded-md bg-white shadow-sm border focus:outline-none focus:ring-2 focus:ring-green-300"
+              aria-label="Toggle navigation">
+        <!-- icon (we'll swap on toggle) -->
+        <svg id="icon-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z" clip-rule="evenodd" />
+        </svg>
+        <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 hidden" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu (hidden on md+) -->
+  <nav id="mobile-menu" class="md:hidden max-w-6xl mx-auto px-4 pb-4 transform transition-all origin-top scale-y-0 opacity-0">
+    <div class="bg-white rounded-b-xl shadow-lg p-4 flex flex-col gap-3 text-green-700">
+      <a href="/" class="py-2 px-3 rounded hover:bg-green-50 transition">Home</a>
+      <a href="/about" class="py-2 px-3 rounded hover:bg-green-50 transition">About</a>
+      <a href="/blog" class="py-2 px-3 rounded hover:bg-green-50 transition">Blog</a>
+      <a href="/developer" class="py-2 px-3 rounded bg-green-600 text-white text-center hover:bg-green-700 transition">Developer</a>
+    </div>
+  </nav>
+
+  <!-- Small script to toggle mobile menu -->
+  <script>
+    (function () {
+      const btn = document.getElementById('nav-toggle');
+      const menu = document.getElementById('mobile-menu');
+      const iconOpen = document.getElementById('icon-open');
+      const iconClose = document.getElementById('icon-close');
+
+      function openMenu() {
+        // animate open
+        menu.style.display = 'block';
+        requestAnimationFrame(() => {
+          menu.classList.remove('scale-y-0','opacity-0');
+          menu.classList.add('scale-y-100','opacity-100');
+        });
+        btn.setAttribute('aria-expanded', 'true');
+        iconOpen.classList.add('hidden');
+        iconClose.classList.remove('hidden');
+      }
+
+      function closeMenu() {
+        // animate close
+        menu.classList.remove('scale-y-100','opacity-100');
+        menu.classList.add('scale-y-0','opacity-0');
+        btn.setAttribute('aria-expanded', 'false');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+        // hide after animation (200ms)
+        setTimeout(()=> { if (menu.classList.contains('opacity-0')) menu.style.display = 'none'; }, 200);
+      }
+
+      // initial state: hide nav (for cases where CSS doesn't hide)
+      menu.style.display = 'none';
+
+      btn.addEventListener('click', function () {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (expanded) closeMenu(); else openMenu();
+      });
+
+      // close when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!btn.contains(e.target) && !menu.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') {
+          closeMenu();
+        }
+      });
+
+      // close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') closeMenu();
+      });
+    })();
+  </script>
+
+  <!-- tiny utility classes for animation (Tailwind already included in your page) -->
+  <style>
+    /* these classes only used in mobile menu toggle */
+    .scale-y-0 { transform: scaleY(0); transform-origin: top; transition: transform .18s ease, opacity .18s ease; }
+    .scale-y-100 { transform: scaleY(1); transform-origin: top; transition: transform .18s ease, opacity .18s ease; }
+    .opacity-0 { opacity: 0; transition: opacity .18s ease; }
+    .opacity-100 { opacity: 1; transition: opacity .18s ease; }
+  </style>
+</header>
+
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <!-- Left - Form/Card -->
+      <section class="lg:col-span-1 bg-white rounded-2xl p-6 shadow-lg animate-fade-up">
+        <h1 class="text-2xl font-extrabold text-green-800">Health Predictor</h1>
+        <p class="mt-2 text-sm text-gray-600">Type or pick symptoms — select chips, then press <span class="font-medium">Get Recommendation</span>.</p>
+
+        <!-- chip input form -->
+        <form id="symptomForm" action="/predict" method="post" class="mt-6 space-y-4">
+          <!-- hidden input that Flask expects -->
+          <input type="hidden" name="symptoms" id="symptoms-hidden" />
+
+          <label class="text-sm font-medium text-gray-700">Symptoms</label>
+          <div class="relative">
+            <input id="symptom-input" list="symptom-list" type="text"
+                   placeholder="Start typing e.g. itching, vomiting"
+                   class="w-full border rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-green-300"
+                   aria-label="Type symptom and press Enter or click suggestion" />
+            <datalist id="symptom-list">
+              <!-- datalist options filled by JS -->
+            </datalist>
+          </div>
+
+          <!-- suggested quick tags -->
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="text-xs text-gray-500">Quick picks:</span>
+            <div id="quick-suggestions" class="flex flex-wrap gap-2"></div>
+          </div>
+
+          <!-- chips area -->
+          <div class="mt-3 chips flex gap-2 flex-wrap max-h-40 overflow-auto p-2 border rounded-lg bg-green-50">
+            <!-- chips will be inserted here -->
+            <div id="chips" class="flex gap-2 flex-wrap"></div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" id="clear-chips" class="flex-1 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 transition">Clear</button>
+            <button type="submit" class="flex-1 py-2 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700 transition">Get Recommendation</button>
+          </div>
+
+          <p class="text-xs text-gray-500">Tip: You can press Enter after typing a symptom to add it as a chip. Use commas or press the suggestions.</p>
+        </form>
+      </section>
+
+      <!-- Right - Info / Result -->
+      <section class="lg:col-span-2 space-y-6">
+
+        <!-- Hero card -->
+        <div class="bg-white rounded-2xl p-6 shadow-lg animate-fade-up">
+          <div class="flex items-center justify-between gap-6">
+            <div>
+              <h2 class="text-xl font-bold text-green-800">Fast, friendly medical guidance</h2>
+              <p class="text-sm text-gray-600 mt-1">This is an aid — always consult a qualified professional for final diagnosis or treatment.</p>
+            </div>
+            <div class="text-sm text-green-700 font-semibold">Trusted model • Data-driven</div>
+          </div>
+        </div>
+
+        <!-- Results panel (Rendered by Flask when prediction exists) -->
+        {% if prediction %}
+        <div class="bg-white rounded-2xl p-6 shadow-lg animate-fade-up">
+          <div class="flex items-start gap-4">
+            <div class="p-3 rounded-lg bg-green-100">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v6m3-3H9m2.5-9.5L9 7.5M15 16.5l-3.5 1"/>
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-bold text-green-800">Prediction: <span class="font-normal text-gray-700">{{ prediction }}</span></h3>
+              <p class="text-sm text-gray-600 mt-1">Results generated from the symptoms you provided.</p>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Description -->
+          <div>
+            <h4 class="text-md font-semibold text-green-800">Description</h4>
+            <p class="text-gray-700 mt-2">{{ description }}</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+            <!-- Precautions -->
+            <div>
+              <h4 class="text-md font-semibold text-green-800">Precautions</h4>
+              <ul class="mt-2 list-disc pl-5 text-gray-700">
+                {% for p in precautions[0] %}
+                  <li>{{ p }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+
+            <!-- Medication -->
+            <div>
+              <h4 class="text-md font-semibold text-green-800">Medications</h4>
+                <ul class="mt-2 list-disc pl-5 text-gray-700">
+                    {% for m in medication %}
+                     {% if m.startswith("[") %}
+                     {% set meds = m.strip("[]").replace("'", "").split(",") %}
+                     {% for item in meds %}
+                        <li>{{ item.strip() }}</li>
+                        {% endfor %}
+                        {% else %}
+                            <li>{{ m }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+
+            </div>
+
+            <!-- Diet -->
+            <div>
+              <h4 class="text-md font-semibold text-green-800">Diet Suggestions</h4>
+                <ul class="mt-2 list-disc pl-5 text-gray-700">
+                    {% for d in diet %}
+                        {% if d.startswith("[") %}
+                            {% set diets = d.strip("[]").replace("'", "").split(",") %}
+                            {% for item in diets %}
+                                <li>{{ item.strip() }}</li>
+                            {% endfor %}
+                        {% else %}
+                            <li>{{ d }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+
+            </div>
+
+            <!-- Workout -->
+            <div>
+              <h4 class="text-md font-semibold text-green-800">Workout</h4>
+              <ul class="mt-2 list-disc pl-5 text-gray-700">
+                {% for w in workout %}
+                  <li>{{ w }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <!-- Empty placeholder when no prediction -->
+        <div class="bg-white rounded-2xl p-6 shadow-lg animate-fade-up">
+          <p class="text-gray-600">Enter symptoms on the left and press <span class="font-medium">Get Recommendation</span> to see results here.</p>
+        </div>
+        {% endif %}
+
+        <!-- Extra tips card -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm animate-fade-up">
+          <h4 class="text-md font-semibold text-green-800">How to enter symptoms</h4>
+          <ul class="mt-3 list-disc pl-5 text-gray-700">
+            <li>Type a symptom and press <span class="font-medium">Enter</span> to add it as a chip.</li>
+            <li>Or pick from the quick suggestions.</li>
+            <li>Chips are editable — click the ✕ to remove any symptom.</li>
+            <li>Submit the list to get a disease prediction and tailored recommendations.</li>
+          </ul>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="mt-12 bg-white/80 backdrop-blur py-6 border-t">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-green-600 text-white p-2 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-semibold text-green-800">MediSight</div>
+          <div class="text-xs text-gray-500">AI-assisted suggestions — educational only</div>
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-600">© <span id="year"></span> MediSight. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- JavaScript: chip logic & symptom list -->
+  <script>
+    // Symptoms list (kept in sync with your Flask mapping)
+    const SYMPTOMS = [
+      "itching","skin_rash","nodal_skin_eruptions","continuous_sneezing","shivering","chills",
+      "joint_pain","stomach_pain","acidity","ulcers_on_tongue","muscle_wasting","vomiting",
+      "burning_micturition","spotting_ urination","fatigue","weight_gain","anxiety","cold_hands_and_feets",
+      "mood_swings","weight_loss","restlessness","lethargy","patches_in_throat","irregular_sugar_level",
+      "cough","high_fever","sunken_eyes","breathlessness","sweating","dehydration","indigestion","headache",
+      "yellowish_skin","dark_urine","nausea","loss_of_appetite","pain_behind_the_eyes","back_pain","constipation",
+      "abdominal_pain","diarrhoea","mild_fever","yellow_urine","yellowing_of_eyes","acute_liver_failure",
+      "fluid_overload","swelling_of_stomach","swelled_lymph_nodes","malaise","blurred_and_distorted_vision",
+      "phlegm","throat_irritation","redness_of_eyes","sinus_pressure","runny_nose","congestion","chest_pain",
+      "weakness_in_limbs","fast_heart_rate","pain_during_bowel_movements","pain_in_anal_region","bloody_stool",
+      "irritation_in_anus","neck_pain","dizziness","cramps","bruising","obesity","swollen_legs",
+      "swollen_blood_vessels","puffy_face_and_eyes","enlarged_thyroid","brittle_nails","swollen_extremeties",
+      "excessive_hunger","extra_marital_contacts","drying_and_tingling_lips","slurred_speech","knee_pain",
+      "hip_joint_pain","muscle_weakness","stiff_neck","swelling_joints","movement_stiffness","spinning_movements",
+      "loss_of_balance","unsteadiness","weakness_of_one_body_side","loss_of_smell","bladder_discomfort",
+      "foul_smell_of urine","continuous_feel_of_urine","passage_of_gases","internal_itching","toxic_look_(typhos)",
+      "depression","irritability","muscle_pain","altered_sensorium","red_spots_over_body","belly_pain",
+      "abnormal_menstruation","dischromic _patches","watering_from_eyes","increased_appetite","polyuria",
+      "family_history","mucoid_sputum","rusty_sputum","lack_of_concentration","visual_disturbances",
+      "receiving_blood_transfusion","receiving_unsterile_injections","coma","stomach_bleeding","distention_of_abdomen",
+      "history_of_alcohol_consumption","fluid_overload.1","blood_in_sputum","prominent_veins_on_calf","palpitations",
+      "painful_walking","pus_filled_pimples","blackheads","scurring","skin_peeling","silver_like_dusting",
+      "small_dents_in_nails","inflammatory_nails","blister","red_sore_around_nose","yellow_crust_ooze"
+    ];
+
+    // DOM refs
+    const input = document.getElementById('symptom-input');
+    const chipsContainer = document.getElementById('chips');
+    const hidden = document.getElementById('symptoms-hidden');
+    const quick = document.getElementById('quick-suggestions');
+    const datalist = document.getElementById('symptom-list');
+    const clearBtn = document.getElementById('clear-chips');
+    const form = document.getElementById('symptomForm');
+
+    // keep a set for uniqueness
+    const selected = new Set();
+
+    // populate datalist and quick suggestions
+    function initSuggestions() {
+      SYMPTOMS.slice(0, 30).forEach(s => { // show first 30 as quick picks
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'px-3 py-1 rounded-full bg-white border text-sm text-green-700 hover:bg-green-50 shadow-sm';
+        btn.textContent = s;
+        btn.addEventListener('click', () => addChip(s));
+        quick.appendChild(btn);
+      });
+
+      // datalist options
+      SYMPTOMS.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        datalist.appendChild(opt);
+      });
+    }
+
+    function createChipElement(text) {
+      const wrap = document.createElement('div');
+      wrap.className = 'flex items-center gap-2 bg-white px-3 py-1 rounded-full shadow-sm text-sm animate-fade-up';
+      wrap.style.animationDelay = '0ms';
+
+      const label = document.createElement('div');
+      label.className = 'select-none';
+      label.textContent = text;
+
+      const rem = document.createElement('button');
+      rem.type = 'button';
+      rem.className = 'ml-2 text-xs text-red-500 hover:text-red-700';
+      rem.innerHTML = '✕';
+      rem.addEventListener('click', () => {
+        selected.delete(text);
+        wrap.remove();
+        syncHidden();
+      });
+
+      wrap.appendChild(label);
+      wrap.appendChild(rem);
+      return wrap;
+    }
+
+    function addChip(text) {
+      text = text.trim();
+      if (!text) return;
+      if (selected.has(text)) {
+        // small pulse to indicate it's already added
+        Array.from(chipsContainer.children).forEach(c => {
+          if (c.firstChild && c.firstChild.textContent === text) {
+            c.classList.add('ring-2','ring-green-300');
+            setTimeout(()=> c.classList.remove('ring-2','ring-green-300'), 600);
+          }
+        });
+        input.value = '';
+        return;
+      }
+      selected.add(text);
+      const chip = createChipElement(text);
+      chipsContainer.appendChild(chip);
+      input.value = '';
+      syncHidden();
+    }
+
+    function syncHidden() {
+      // join with commas — server expects "sym1,sym2,..."
+      hidden.value = Array.from(selected).join(',');
+    }
+
+    // keyboard handling: Enter or comma adds chip
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const val = input.value.replace(/,$/, '').trim();
+        if (val) addChip(val);
+      } else if (e.key === 'Backspace' && input.value === '') {
+        // remove last chip on backspace if empty
+        const arr = Array.from(selected);
+        if (arr.length) {
+          const last = arr[arr.length - 1];
+          selected.delete(last);
+          // remove last DOM element
+          const nodes = chipsContainer.children;
+          if (nodes.length) nodes[nodes.length - 1].remove();
+          syncHidden();
+        }
+      }
+    });
+
+    // click suggestion by selecting from datalist (when user presses Enter we already add)
+    input.addEventListener('change', (e) => {
+      const val = e.target.value.trim();
+      if (val) addChip(val);
+    });
+
+    // clear
+    clearBtn.addEventListener('click', () => {
+      selected.clear();
+      chipsContainer.innerHTML = '';
+      syncHidden();
+    });
+
+    // ensure hidden is synced before submit (extra safety)
+    form.addEventListener('submit', () => {
+      syncHidden();
+    });
+
+    // init
+    initSuggestions();
+
+    // footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

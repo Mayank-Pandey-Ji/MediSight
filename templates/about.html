@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About – MediSight</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-green-50 text-gray-800">
+
+    <!-- Navbar (same style as homepage for consistency) -->
+    <!-- NAVBAR -->
+  <!-- NAVBAR (mobile menu toggle added) -->
+<header class="bg-white/80 backdrop-blur sticky top-0 z-40 shadow-sm">
+  <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between gap-6">
+    <div class="flex items-center gap-3">
+      <!-- Logo / Branding -->
+      <div class="bg-green-600 text-white p-2 rounded-lg shadow-md flex items-center justify-center">
+        <!-- medical cross SVG -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <a href="/" class="text-lg font-bold text-green-800">MediSight</a>
+        <div class="text-xs text-gray-500 -mt-0.5">Quick health predictor</div>
+      </div>
+    </div>
+
+    <!-- Desktop nav -->
+    <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-green-700">
+      <a href="/" class="hover:text-green-900 transition">Home</a>
+      <a href="/about" class="hover:text-green-900 transition">About</a>
+      <a href="/blog" class="hover:text-green-900 transition">Blog</a>
+      <a href="/developer" class="px-3 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition">Developer</a>
+    </nav>
+
+    <!-- Mobile menu button -->
+    <div class="md:hidden">
+      <button id="nav-toggle" aria-controls="mobile-menu" aria-expanded="false"
+              class="p-2 rounded-md bg-white shadow-sm border focus:outline-none focus:ring-2 focus:ring-green-300"
+              aria-label="Toggle navigation">
+        <!-- icon (we'll swap on toggle) -->
+        <svg id="icon-open" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M3 5h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2zm0 4h14a1 1 0 010 2H3a1 1 0 010-2z" clip-rule="evenodd" />
+        </svg>
+        <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-700 hidden" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 011.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile menu (hidden on md+) -->
+  <nav id="mobile-menu" class="md:hidden max-w-6xl mx-auto px-4 pb-4 transform transition-all origin-top scale-y-0 opacity-0">
+    <div class="bg-white rounded-b-xl shadow-lg p-4 flex flex-col gap-3 text-green-700">
+      <a href="/" class="py-2 px-3 rounded hover:bg-green-50 transition">Home</a>
+      <a href="/about" class="py-2 px-3 rounded hover:bg-green-50 transition">About</a>
+      <a href="/blog" class="py-2 px-3 rounded hover:bg-green-50 transition">Blog</a>
+      <a href="/developer" class="py-2 px-3 rounded bg-green-600 text-white text-center hover:bg-green-700 transition">Developer</a>
+    </div>
+  </nav>
+
+  <!-- Small script to toggle mobile menu -->
+  <script>
+    (function () {
+      const btn = document.getElementById('nav-toggle');
+      const menu = document.getElementById('mobile-menu');
+      const iconOpen = document.getElementById('icon-open');
+      const iconClose = document.getElementById('icon-close');
+
+      function openMenu() {
+        // animate open
+        menu.style.display = 'block';
+        requestAnimationFrame(() => {
+          menu.classList.remove('scale-y-0','opacity-0');
+          menu.classList.add('scale-y-100','opacity-100');
+        });
+        btn.setAttribute('aria-expanded', 'true');
+        iconOpen.classList.add('hidden');
+        iconClose.classList.remove('hidden');
+      }
+
+      function closeMenu() {
+        // animate close
+        menu.classList.remove('scale-y-100','opacity-100');
+        menu.classList.add('scale-y-0','opacity-0');
+        btn.setAttribute('aria-expanded', 'false');
+        iconOpen.classList.remove('hidden');
+        iconClose.classList.add('hidden');
+        // hide after animation (200ms)
+        setTimeout(()=> { if (menu.classList.contains('opacity-0')) menu.style.display = 'none'; }, 200);
+      }
+
+      // initial state: hide nav (for cases where CSS doesn't hide)
+      menu.style.display = 'none';
+
+      btn.addEventListener('click', function () {
+        const expanded = btn.getAttribute('aria-expanded') === 'true';
+        if (expanded) closeMenu(); else openMenu();
+      });
+
+      // close when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!btn.contains(e.target) && !menu.contains(e.target) && btn.getAttribute('aria-expanded') === 'true') {
+          closeMenu();
+        }
+      });
+
+      // close on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && btn.getAttribute('aria-expanded') === 'true') closeMenu();
+      });
+    })();
+  </script>
+
+  <!-- tiny utility classes for animation (Tailwind already included in your page) -->
+  <style>
+    /* these classes only used in mobile menu toggle */
+    .scale-y-0 { transform: scaleY(0); transform-origin: top; transition: transform .18s ease, opacity .18s ease; }
+    .scale-y-100 { transform: scaleY(1); transform-origin: top; transition: transform .18s ease, opacity .18s ease; }
+    .opacity-0 { opacity: 0; transition: opacity .18s ease; }
+    .opacity-100 { opacity: 1; transition: opacity .18s ease; }
+  </style>
+</header>
+
+
+    <!-- Main Content -->
+    <div class="max-w-4xl mx-auto bg-white mt-10 p-10 rounded-2xl shadow-lg">
+        
+        <h1 class="text-3xl font-bold text-green-800 mb-4">About This Project</h1>
+
+        <p class="text-gray-700 leading-7">
+            <strong>MediSight</strong> is an AI-powered health prediction web application designed to help people
+            understand possible diseases based on their symptoms. This tool acts as a quick and early assistant, helping
+            users become more aware of their health.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-green-700 mt-6">How It Works</h2>
+        <p class="text-gray-700 leading-7 mt-2">
+            This website uses a <strong>Machine Learning model (Support Vector Machine – SVM)</strong> that has been trained on 
+            a medical dataset containing:
+        </p>
+
+        <ul class="list-disc pl-6 text-gray-700 mt-2">
+            <li>Symptoms of various diseases</li>
+            <li>Description and details of each disease</li>
+            <li>Precautions and preventive measures</li>
+            <li>Common medications</li>
+            <li>Recommended diet charts</li>
+            <li>Workout & lifestyle recommendations</li>
+        </ul>
+
+        <h2 class="text-2xl font-semibold text-green-700 mt-6">Our Goal</h2>
+        <p class="text-gray-700 leading-7">
+            The purpose of MediSight is to provide a quick overview of what a person <strong>might</strong> be experiencing,
+            based on the symptoms they input. This is meant to help users become informed and take the next steps toward
+            better health.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-green-700 mt-6">Important Note</h2>
+        <p class="text-gray-700 leading-7">
+            This is an <strong>educational and informational tool</strong>. It is <strong>not</strong> a substitute for a medical
+            professional.  
+            Always consult a certified doctor for diagnosis, medication, and treatment.
+        </p>
+
+        <h2 class="text-2xl font-semibold text-green-700 mt-6">Technology Used</h2>
+        <ul class="list-disc pl-6 text-gray-700 mt-2">
+            <li>Python (Flask Framework)</li>
+            <li>Machine Learning (Support Vector Machine Model)</li>
+            <li>Pandas & NumPy for preprocessing</li>
+            <li>TailwindCSS for beautiful UI</li>
+            <li>Frontend templating using Jinja2</li>
+        </ul>
+
+        
+
+    </div>
+    <footer class="mt-12 bg-white/80 backdrop-blur py-6 border-t">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-green-600 text-white p-2 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6M12 9v6M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-semibold text-green-800">MediSight</div>
+          <div class="text-xs text-gray-500">AI-assisted suggestions — educational only</div>
+        </div>
+      </div>
+
+      <div class="text-sm text-gray-600">© <span id="year"></span> MediSight. All rights reserved.</div>
+    </div>
+  </footer>
+
+</body>
+</html>
